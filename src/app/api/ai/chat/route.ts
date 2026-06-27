@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { askClaude } from "@/lib/ai/claude";
+import { buildUserContext } from "@/lib/ai/context";
 
 const SYSTEM = `Você é o Assistente do THIAGO OS, um sistema operacional pessoal.
 Você tem acesso ao contexto do usuário (energia, sono, tarefas, finanças, metas)
@@ -11,7 +12,7 @@ Seja direto, prático e motivador. Responda em português do Brasil.`;
  * In Phase 2, `context` is built server-side from the user's real data.
  */
 export async function POST(req: Request) {
-  const { message, context } = await req.json();
+  const { message } = await req.json();
 
   if (!message) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
@@ -27,8 +28,10 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Build the user snapshot server-side (never trust client-sent context).
+    const context = await buildUserContext();
     const contextBlock = context
-      ? `\n\nContexto do usuário:\n${JSON.stringify(context)}`
+      ? `\n\n[Contexto do usuário — use para personalizar a resposta]\n${JSON.stringify(context)}`
       : "";
     const reply = await askClaude(message + contextBlock, {
       system: SYSTEM,

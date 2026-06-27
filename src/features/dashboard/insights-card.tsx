@@ -2,9 +2,9 @@
 
 import { Sparkles } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { mockInsights } from "@/lib/mock-data";
+import type { AiInsight } from "@/lib/types";
 
-export function InsightsCard() {
+export function InsightsCard({ insights }: { insights: AiInsight[] }) {
   return (
     <Card>
       <CardHeader>
@@ -12,7 +12,12 @@ export function InsightsCard() {
         <Sparkles className="h-4 w-4 text-accent" />
       </CardHeader>
       <CardContent className="space-y-3">
-        {mockInsights.map((insight) => (
+        {insights.length === 0 && (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Os insights aparecem conforme você usa o sistema.
+          </p>
+        )}
+        {insights.map((insight) => (
           <div
             key={insight.id}
             className="rounded-xl border border-border/50 bg-secondary/30 p-4"

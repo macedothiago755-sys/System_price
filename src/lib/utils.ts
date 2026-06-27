@@ -33,3 +33,22 @@ export function formatBRL(value: number): string {
 export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
+
+/**
+ * Performance Score (0–100) — mirrors the SQL `performance_score` function so
+ * the UI and DB agree. Blends sleep, recovery, focus and energy.
+ */
+export function performanceScore(args: {
+  sleep_score?: number | null;
+  recovery_score?: number | null;
+  focus?: number | null;
+  energy?: number | null;
+}): number {
+  const sleep = args.sleep_score ?? 70;
+  const recovery = args.recovery_score ?? 70;
+  const focus = (args.focus ?? 7) * 10;
+  const energy = (args.energy ?? 7) * 10;
+  return Math.round(
+    clamp(sleep * 0.3 + recovery * 0.25 + focus * 0.25 + energy * 0.2, 0, 100)
+  );
+}

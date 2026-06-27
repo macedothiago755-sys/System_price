@@ -1,7 +1,10 @@
 import { Planner } from "@/features/tasks/planner";
 import { TaskBoard } from "@/features/tasks/task-board";
+import { getTasks } from "@/lib/data";
 
-export default function TasksPage() {
+export default async function TasksPage() {
+  const { tasks } = await getTasks();
+
   return (
     <>
       <div className="mb-6">
@@ -15,7 +18,7 @@ export default function TasksPage() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Planner />
-        <TaskBoard />
+        <TaskBoard initialTasks={tasks} />
       </div>
     </>
   );

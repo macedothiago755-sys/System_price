@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Sparkles, Loader2, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { PlannedTask } from "@/lib/ai/planner";
+import { savePlannedTasks } from "./actions";
 
 const priorityVariant = {
   urgent: "destructive",
@@ -15,8 +17,10 @@ const priorityVariant = {
 } as const;
 
 export function Planner() {
+  const router = useRouter();
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<PlannedTask[] | null>(null);
 
   async function handlePlan() {
@@ -32,6 +36,16 @@ export function Planner() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleSave() {
+    if (!result?.length) return;
+    setSaving(true);
+    await savePlannedTasks(result);
+    setSaving(false);
+    setResult(null);
+    setText("");
+    router.refresh();
   }
 
   return (
@@ -83,6 +97,19 @@ export function Planner() {
               </div>
             </div>
           ))}
+
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="mt-1 w-full"
+          >
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+            Adicionar {result.length} tarefa{result.length > 1 ? "s" : ""} ao board
+          </Button>
         </div>
       )}
     </Card>

@@ -5,8 +5,8 @@ import { CheckCircle2, Circle, Clock, Zap, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { mockTasks } from "@/lib/mock-data";
 import type { Task } from "@/lib/types";
+import { toggleTask } from "./actions";
 
 const categoryColor: Record<Task["category"], string> = {
   work: "text-accent",
@@ -18,17 +18,20 @@ const categoryColor: Record<Task["category"], string> = {
 
 const energyLabel = { low: "Baixa", medium: "Média", high: "Alta" } as const;
 
-export function TaskBoard() {
-  const [tasks, setTasks] = useState(mockTasks);
+export function TaskBoard({ initialTasks }: { initialTasks: Task[] }) {
+  const [tasks, setTasks] = useState(initialTasks);
 
   function toggle(id: string) {
+    let nowDone = false;
     setTasks((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? { ...t, status: t.status === "done" ? "todo" : "done" }
-          : t
-      )
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        nowDone = t.status !== "done";
+        return { ...t, status: nowDone ? "done" : "todo" };
+      })
     );
+    // Persist in the background (optimistic UI). No-op in demo mode.
+    void toggleTask(id, nowDone);
   }
 
   const active = tasks.filter((t) => t.status !== "done");

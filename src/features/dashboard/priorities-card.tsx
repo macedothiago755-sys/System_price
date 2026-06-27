@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Clock, Zap } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { mockPriorities } from "@/lib/mock-data";
+import type { Priority } from "@/lib/data";
 
 const energyLabel = { low: "Baixa", medium: "Média", high: "Alta" } as const;
 const energyVariant = {
@@ -13,7 +13,7 @@ const energyVariant = {
   high: "accent",
 } as const;
 
-export function PrioritiesCard() {
+export function PrioritiesCard({ priorities }: { priorities: Priority[] }) {
   return (
     <Card>
       <CardHeader>
@@ -21,7 +21,12 @@ export function PrioritiesCard() {
         <Badge variant="outline">Top 3</Badge>
       </CardHeader>
       <CardContent className="space-y-3">
-        {mockPriorities.map((p, i) => (
+        {priorities.length === 0 && (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Sem prioridades abertas. Faça seu planejamento. ✨
+          </p>
+        )}
+        {priorities.map((p, i) => (
           <motion.div
             key={p.id}
             initial={{ opacity: 0, x: -8 }}
@@ -47,7 +52,8 @@ export function PrioritiesCard() {
               </Badge>
             </div>
             <div className="mt-2 flex items-center gap-1 pl-9 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />~{p.estimated_min} min
+              <Clock className="h-3 w-3" />
+              {p.estimated_min ? `~${p.estimated_min} min` : "sem estimativa"}
             </div>
           </motion.div>
         ))}

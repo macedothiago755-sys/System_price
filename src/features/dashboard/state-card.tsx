@@ -4,36 +4,69 @@ import { motion } from "framer-motion";
 import { Battery, Brain, Moon, HeartPulse } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { mockCheckin, mockHealth } from "@/lib/mock-data";
+import { performanceScore } from "@/lib/utils";
+import type { DailyCheckin, HealthMetric } from "@/lib/types";
 
-const metrics = [
-  {
-    label: "Energia",
-    value: `${mockCheckin.energy}/10`,
-    icon: Battery,
-    color: "text-primary",
-  },
-  { label: "Foco", value: "Alto", icon: Brain, color: "text-accent" },
-  {
-    label: "Sono",
-    value: `${mockCheckin.sleep_hours}h`,
-    icon: Moon,
-    color: "text-sky-400",
-  },
-  {
-    label: "Recuperação",
-    value: `${mockHealth.recovery_score}%`,
-    icon: HeartPulse,
-    color: "text-rose-400",
-  },
-];
+function focusLabel(focus: number | null | undefined): string {
+  if (focus == null) return "—";
+  if (focus >= 8) return "Alto";
+  if (focus >= 5) return "Médio";
+  return "Baixo";
+}
 
-export function StateCard() {
+export function StateCard({
+  checkin,
+  health,
+}: {
+  checkin: DailyCheckin | null;
+  health: HealthMetric | null;
+}) {
+  const score = performanceScore({
+    sleep_score: health?.sleep_score,
+    recovery_score: health?.recovery_score,
+    focus: checkin?.focus,
+    energy: checkin?.energy,
+  });
+
+  const metrics = [
+    {
+      label: "Energia",
+      value: checkin?.energy != null ? `${checkin.energy}/10` : "—",
+      icon: Battery,
+      color: "text-primary",
+    },
+    {
+      label: "Foco",
+      value: focusLabel(checkin?.focus),
+      icon: Brain,
+      color: "text-accent",
+    },
+    {
+      label: "Sono",
+      value: checkin?.sleep_hours != null ? `${checkin.sleep_hours}h` : "—",
+      icon: Moon,
+      color: "text-sky-400",
+    },
+    {
+      label: "Recuperação",
+      value: health?.recovery_score != null ? `${health.recovery_score}%` : "—",
+      icon: HeartPulse,
+      color: "text-rose-400",
+    },
+  ];
+
+  const recommendation =
+    score >= 80
+      ? "Hoje é um bom dia para tarefas estratégicas. Aproveite o pico de foco antes da tarde."
+      : score >= 60
+        ? "Energia razoável. Comece pelas prioridades e faça pausas curtas."
+        : "Dia de baixa. Foque no essencial e em tarefas leves — recupere-se.";
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Estado atual</CardTitle>
-        <Badge variant="primary">Performance estimada · 86</Badge>
+        <Badge variant="primary">Performance estimada · {score}</Badge>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -54,9 +87,10 @@ export function StateCard() {
 
         <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
           <p className="text-sm">
-            <span className="font-medium text-primary">Recomendação da IA: </span>
-            Hoje é um bom dia para tarefas estratégicas. Aproveite o pico de
-            foco da manhã antes da reunião das 14h.
+            <span className="font-medium text-primary">
+              Recomendação da IA:{" "}
+            </span>
+            {recommendation}
           </p>
         </div>
       </CardContent>

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Mood } from "@/lib/types";
+import { submitCheckin } from "./actions";
 
 const moods: { value: Mood; emoji: string; label: string }[] = [
   { value: "great", emoji: "😀", label: "Bem" },
@@ -49,11 +51,24 @@ export function CheckinForm() {
   const [concern, setConcern] = useState("");
   const [win, setWin] = useState("");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Phase 2: POST to /api/checkins -> Supabase + award XP.
-    setSaved(true);
+    setSaving(true);
+    setError(null);
+    const res = await submitCheckin({
+      energy,
+      focus,
+      mood,
+      sleep_hours: Number(sleep),
+      main_concern: concern,
+      win_of_day: win,
+    });
+    setSaving(false);
+    if (res.ok) setSaved(true);
+    else setError(res.error);
   }
 
   if (saved) {
@@ -159,7 +174,12 @@ export function CheckinForm() {
         />
       </Card>
 
-      <Button type="submit" size="lg" className="w-full">
+      {error && (
+        <p className="text-center text-sm text-destructive">{error}</p>
+      )}
+
+      <Button type="submit" size="lg" className="w-full" disabled={saving}>
+        {saving && <Loader2 className="h-4 w-4 animate-spin" />}
         Concluir check-in · +25 XP
       </Button>
     </form>
