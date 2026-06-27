@@ -52,9 +52,17 @@ npm run dev         # http://localhost:3000
 **Fase 1 (implementada):** Autenticação, Dashboard, Check-in diário,
 Tarefas inteligentes (com planejamento por IA), schema completo + gamificação.
 
-**Fases seguintes (estrutura pronta):** Health Intelligence (Polar),
-Personal Finance + Financial Health Score, Investimentos, Work Hub +
-Meeting Intelligence, Knowledge Hub, Goals + Weekly Review.
+**Fase 2 (implementada):** Camada de dados real do Supabase (com fallback demo),
+Server Actions de persistência, e o _context builder_ da IA que injeta o
+snapshot do usuário nos prompts.
+
+**Fase 3 (implementada):** Personal Finance (dashboard, Financial Health Score,
+simulador de compras com IA), Investimentos (carteira + distribuição), e
+Health Intelligence (Performance Score, métricas, gráfico de tendência,
+registro manual, Polar Flow preparado).
+
+**Fases seguintes (estrutura pronta):** Work Hub + Meeting Intelligence,
+Knowledge Hub, Goals + Weekly Review, Google Calendar e automações n8n.
 
 Veja o roadmap completo em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 

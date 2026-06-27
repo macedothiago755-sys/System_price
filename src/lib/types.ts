@@ -11,6 +11,16 @@ export type TaskCategory =
   | "finance"
   | "learning";
 export type Mood = "great" | "ok" | "bad";
+export type TxType = "income" | "expense";
+
+export interface Investment {
+  id: string;
+  name: string;
+  asset_type: string | null;
+  amount: number;
+  yield_pct: number | null;
+  goal: string | null;
+}
 
 export interface Profile {
   id: string;

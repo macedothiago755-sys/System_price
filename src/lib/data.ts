@@ -8,6 +8,9 @@ import {
   mockInsights,
   mockTasks,
   mockPriorities,
+  mockTransactions,
+  mockInvestments,
+  mockHealthHistory,
 } from "@/lib/mock-data";
 import type {
   Profile,
@@ -16,7 +19,14 @@ import type {
   AiInsight,
   Task,
   EnergyLevel,
+  Investment,
 } from "@/lib/types";
+import {
+  summarize,
+  financialHealthScore,
+  type Transaction,
+  type FinanceSummary,
+} from "@/lib/finance";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -140,4 +150,104 @@ export async function getTasks(): Promise<{ tasks: Task[]; demo: boolean }> {
     .order("position", { ascending: true });
 
   return { tasks: (data as Task[]) ?? [], demo: false };
+}
+
+const since = (days: number) =>
+  new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+
+export interface FinanceData {
+  demo: boolean;
+  transactions: Transaction[];
+  summary: FinanceSummary;
+  score: number;
+}
+
+/** Finance dashboard: last-30d transactions + summary + health score. */
+export async function getFinanceData(): Promise<FinanceData> {
+  const user = await getCurrentUser();
+  const transactions = await (async () => {
+    if (!user) return mockTransactions;
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("financial_transactions")
+      .select("id, type, amount, category, description, date")
+      .eq("user_id", user.id)
+      .gte("date", since(30))
+      .order("date", { ascending: false });
+    return ((data as Transaction[]) ?? []).map((t) => ({
+      ...t,
+      amount: Number(t.amount),
+    }));
+  })();
+
+  const summary = summarize(transactions);
+  return {
+    demo: !user,
+    transactions,
+    summary,
+    score: financialHealthScore(summary),
+  };
+}
+
+export interface InvestmentsData {
+  demo: boolean;
+  investments: Investment[];
+  total: number;
+}
+
+/** Portfolio: assets + total net worth. */
+export async function getInvestmentsData(): Promise<InvestmentsData> {
+  const user = await getCurrentUser();
+  const investments = await (async () => {
+    if (!user) return mockInvestments;
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("investments")
+      .select("id, name, asset_type, amount, yield_pct, goal")
+      .eq("user_id", user.id)
+      .order("amount", { ascending: false });
+    return ((data as Investment[]) ?? []).map((i) => ({
+      ...i,
+      amount: Number(i.amount),
+    }));
+  })();
+
+  return {
+    demo: !user,
+    investments,
+    total: investments.reduce((s, i) => s + i.amount, 0),
+  };
+}
+
+export interface HealthData {
+  demo: boolean;
+  latest: HealthMetric | null;
+  history: HealthMetric[];
+}
+
+/** Health dashboard: latest metrics + trailing history for charts. */
+export async function getHealthData(): Promise<HealthData> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return {
+      demo: true,
+      latest: mockHealthHistory[mockHealthHistory.length - 1],
+      history: mockHealthHistory,
+    };
+  }
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("health_metrics")
+    .select("*")
+    .eq("user_id", user.id)
+    .gte("date", since(14))
+    .order("date", { ascending: true });
+
+  const history = (data as HealthMetric[]) ?? [];
+  return {
+    demo: false,
+    latest: history.length ? history[history.length - 1] : null,
+    history,
+  };
 }
