@@ -35,6 +35,15 @@ export interface Investment {
   goal: string | null;
 }
 
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  kind: string; // meeting | focus_block | appointment
+  starts_at: string;
+  ends_at: string | null;
+  source: string;
+}
+
 export type GoalCategory =
   | "finance"
   | "health"

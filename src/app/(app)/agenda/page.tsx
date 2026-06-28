@@ -1,17 +1,18 @@
-import { ComingSoon } from "@/components/layout/coming-soon";
+import { Agenda } from "@/features/agenda/agenda";
+import { getEvents } from "@/lib/data";
 
-export default function AgendaPage() {
+export default async function AgendaPage() {
+  const { events } = await getEvents();
+
   return (
-    <ComingSoon
-      title="Agenda"
-      phase="Fase 4"
-      subtitle="Reuniões, compromissos e blocos de foco em um só lugar, com integração ao Google Calendar."
-      features={[
-        "Integração Google Calendar",
-        "Blocos de foco automáticos",
-        "Reuniões e compromissos",
-        "Sugestão de agenda pela IA",
-      ]}
-    />
+    <>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight">Agenda</h1>
+        <p className="mt-1 text-muted-foreground">
+          Reuniões, compromissos e blocos de foco em um só lugar.
+        </p>
+      </div>
+      <Agenda events={events} />
+    </>
   );
 }

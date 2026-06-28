@@ -28,6 +28,7 @@ import type {
   Project,
   Note,
   ScheduledTransaction,
+  CalendarEvent,
 } from "@/lib/types";
 import {
   buildProjection,
@@ -176,27 +177,69 @@ export interface FinanceData {
   score: number;
 }
 
-/** Finance dashboard: last-30d transactions + summary + health score. */
+/**
+ * Finance dashboard: last-30d transactions + provisões marcadas como pagas no
+ * período (entram como gasto/recebido real) + summary + health score.
+ */
 export async function getFinanceData(): Promise<FinanceData> {
   const user = await getCurrentUser();
-  const transactions = await (async () => {
-    if (!user) return mockTransactions;
-    const supabase = createClient();
-    const { data } = await supabase
+  if (!user) {
+    const summary = summarize(mockTransactions);
+    return {
+      demo: true,
+      transactions: mockTransactions,
+      summary,
+      score: financialHealthScore(summary),
+    };
+  }
+
+  const supabase = createClient();
+  const [txRes, paidRes] = await Promise.all([
+    supabase
       .from("financial_transactions")
       .select("id, type, amount, category, description, date")
       .eq("user_id", user.id)
       .gte("date", since(30))
-      .order("date", { ascending: false });
-    return ((data as Transaction[]) ?? []).map((t) => ({
-      ...t,
-      amount: Number(t.amount),
-    }));
-  })();
+      .order("date", { ascending: false }),
+    // Provisões já pagas/recebidas no período viram lançamentos reais.
+    supabase
+      .from("scheduled_transactions")
+      .select("id, type, amount, category, description, due_date")
+      .eq("user_id", user.id)
+      .eq("paid", true)
+      .gte("due_date", since(30)),
+  ]);
+
+  const real = ((txRes.data as Transaction[]) ?? []).map((t) => ({
+    ...t,
+    amount: Number(t.amount),
+  }));
+
+  const fromProvisions: Transaction[] = (
+    (paidRes.data as Array<{
+      id: string;
+      type: Transaction["type"];
+      amount: number;
+      category: string | null;
+      description: string | null;
+      due_date: string;
+    }>) ?? []
+  ).map((p) => ({
+    id: `sched-${p.id}`,
+    type: p.type,
+    amount: Number(p.amount),
+    category: p.category ?? "outros",
+    description: p.description ? `${p.description} (provisão)` : "Provisão",
+    date: p.due_date,
+  }));
+
+  const transactions = [...real, ...fromProvisions].sort((a, b) =>
+    a.date < b.date ? 1 : -1
+  );
 
   const summary = summarize(transactions);
   return {
-    demo: !user,
+    demo: false,
     transactions,
     summary,
     score: financialHealthScore(summary),
@@ -331,6 +374,25 @@ export async function getForecast(): Promise<ForecastData> {
     projection: buildProjection(entries),
     totals: forecastTotals(entries.filter((e) => !e.paid)),
   };
+}
+
+/** Upcoming calendar events (next 30 days). */
+export async function getEvents(): Promise<{
+  events: CalendarEvent[];
+  demo: boolean;
+}> {
+  const user = await getCurrentUser();
+  if (!user) return { events: [], demo: true };
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("calendar_events")
+    .select("id, title, kind, starts_at, ends_at, source")
+    .eq("user_id", user.id)
+    .gte("starts_at", new Date(Date.now() - 86_400_000).toISOString())
+    .order("starts_at", { ascending: true });
+
+  return { events: (data as CalendarEvent[]) ?? [], demo: false };
 }
 
 /** Knowledge Hub notes. */

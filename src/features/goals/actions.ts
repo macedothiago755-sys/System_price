@@ -38,6 +38,22 @@ export async function createGoal(input: GoalInput): Promise<Result> {
   return { ok: true };
 }
 
+export async function deleteGoal(id: string): Promise<Result> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: true, demo: true };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("goals")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/goals");
+  return { ok: true };
+}
+
 export async function updateGoalProgress(
   id: string,
   current: number

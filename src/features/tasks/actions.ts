@@ -32,6 +32,42 @@ export async function toggleTask(id: string, done: boolean): Promise<Result> {
   return { ok: true };
 }
 
+/** Delete a task (e.g. created by mistake). */
+export async function deleteTask(id: string): Promise<Result> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: true, demo: true };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("tasks")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/tasks");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Delete every non-archived task at once (clean up bad imports). */
+export async function clearAllTasks(): Promise<Result> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: true, demo: true };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("tasks")
+    .delete()
+    .eq("user_id", user.id)
+    .neq("status", "archived");
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/tasks");
+  revalidatePath("/");
+  return { ok: true };
+}
+
 /** Persist a batch of AI-planned tasks. Awards planning XP once. */
 export async function savePlannedTasks(tasks: PlannedTask[]): Promise<Result> {
   const user = await getCurrentUser();

@@ -20,6 +20,10 @@ export interface UserContext {
   latestHealth: Record<string, unknown> | null;
   openTasks: Array<{ title: string; priority: string; category: string }>;
   finance30d: { income: number; expense: number } | null;
+  upcomingDebts: {
+    pendingTotal: number;
+    next: Array<{ description: string | null; amount: number; due: string }>;
+  } | null;
   goals: Array<{ title: string; category: string; current: number | null; target: number | null }>;
 }
 
@@ -32,7 +36,7 @@ export async function buildUserContext(): Promise<UserContext | null> {
   if (!user) return null;
 
   const supabase = createClient();
-  const [profile, checkins, health, tasks, tx, goals] = await Promise.all([
+  const [profile, checkins, health, tasks, tx, sched, goals] = await Promise.all([
     supabase
       .from("profiles")
       .select("level, xp, streak_days")
@@ -63,6 +67,13 @@ export async function buildUserContext(): Promise<UserContext | null> {
       .eq("user_id", user.id)
       .gte("date", since(30)),
     supabase
+      .from("scheduled_transactions")
+      .select("description, amount, due_date")
+      .eq("user_id", user.id)
+      .eq("type", "expense")
+      .eq("paid", false)
+      .order("due_date", { ascending: true }),
+    supabase
       .from("goals")
       .select("title, category, current_value, target_value")
       .eq("user_id", user.id)
@@ -78,12 +89,29 @@ export async function buildUserContext(): Promise<UserContext | null> {
     { income: 0, expense: 0 }
   );
 
+  const debts = (sched.data ?? []) as Array<{
+    description: string | null;
+    amount: number;
+    due_date: string;
+  }>;
+  const upcomingDebts = debts.length
+    ? {
+        pendingTotal: debts.reduce((s, d) => s + Number(d.amount), 0),
+        next: debts.slice(0, 5).map((d) => ({
+          description: d.description,
+          amount: Number(d.amount),
+          due: d.due_date,
+        })),
+      }
+    : null;
+
   return {
     profile: profile.data ?? null,
     recentCheckins: checkins.data ?? [],
     latestHealth: health.data ?? null,
     openTasks: tasks.data ?? [],
     finance30d: tx.data ? finance30d : null,
+    upcomingDebts,
     goals: (goals.data ?? []).map(
       (g: {
         title: string;
