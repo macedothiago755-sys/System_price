@@ -29,7 +29,9 @@ import type {
   Note,
   ScheduledTransaction,
   CalendarEvent,
+  RoutineBlock,
 } from "@/lib/types";
+import { BASE_ROUTINE } from "@/lib/routine";
 import {
   buildProjection,
   forecastTotals,
@@ -374,6 +376,38 @@ export async function getForecast(): Promise<ForecastData> {
     projection: buildProjection(entries),
     totals: forecastTotals(entries.filter((e) => !e.paid)),
   };
+}
+
+/** Weekly routine blocks (recurring, by weekday). */
+export async function getRoutine(): Promise<{
+  blocks: RoutineBlock[];
+  demo: boolean;
+}> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return {
+      demo: true,
+      blocks: BASE_ROUTINE.map((b, i) => ({
+        id: `seed-${i}`,
+        weekday: b.weekday,
+        start_time: b.start_time,
+        end_time: b.end_time,
+        title: b.title,
+        category: b.category,
+        notes: b.notes ?? null,
+      })),
+    };
+  }
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("routine_blocks")
+    .select("id, weekday, start_time, end_time, title, category, notes")
+    .eq("user_id", user.id)
+    .order("weekday", { ascending: true })
+    .order("start_time", { ascending: true });
+
+  return { blocks: (data as RoutineBlock[]) ?? [], demo: false };
 }
 
 /** Upcoming calendar events (next 30 days). */

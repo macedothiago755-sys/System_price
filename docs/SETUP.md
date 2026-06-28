@@ -65,7 +65,9 @@ supabase db push
 1. No painel do Supabase, vá em **SQL Editor → New query**.
 2. Cole o conteúdo de `supabase/migrations/0001_init.sql` e clique **Run**.
 3. Repita com `supabase/migrations/0002_scores_and_gamification.sql`.
-4. Repita com `supabase/migrations/0003_scheduled_finance.sql` (módulo de Provisões).
+4. Repita com `supabase/migrations/0003_scheduled_finance.sql` (Provisões).
+5. Repita com `supabase/migrations/0004_health_extra.sql` (métricas Polar extras).
+6. Repita com `supabase/migrations/0005_routine.sql` (Rotina semanal).
 
 > ✅ Ao final você terá 15 tabelas com **Row Level Security** ativa, o trigger de
 > criação de perfil (`handle_new_user`), o recálculo de XP e as funções

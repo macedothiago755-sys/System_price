@@ -35,6 +35,16 @@ export interface Investment {
   goal: string | null;
 }
 
+export interface RoutineBlock {
+  id: string;
+  weekday: number; // 1=Seg .. 7=Dom
+  start_time: string | null;
+  end_time: string | null;
+  title: string;
+  category: string;
+  notes: string | null;
+}
+
 export interface CalendarEvent {
   id: string;
   title: string;
