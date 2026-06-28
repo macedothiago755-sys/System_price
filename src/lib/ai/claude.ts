@@ -62,9 +62,21 @@ export async function askClaude(
   opts: ClaudeOptions = {}
 ): Promise<string> {
   const provider = aiProvider();
+  if (!provider) throw new Error("Nenhum provedor de IA configurado.");
+
   if (provider === "gemini") return askGemini(prompt, opts);
-  if (provider === "anthropic") return askAnthropic(prompt, opts);
-  throw new Error("Nenhum provedor de IA configurado.");
+
+  // provider === "anthropic": try Claude, but fall back to Gemini if it fails
+  // (e.g. no credits) and a Gemini key is available.
+  try {
+    return await askAnthropic(prompt, opts);
+  } catch (err) {
+    if (geminiKey()) {
+      console.warn("[ai] Anthropic falhou, usando Gemini:", err);
+      return askGemini(prompt, opts);
+    }
+    throw err;
+  }
 }
 
 /** Ask Claude for strict JSON and parse it. Throws if the response is not valid JSON. */
