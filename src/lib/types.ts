@@ -13,6 +13,19 @@ export type TaskCategory =
 export type Mood = "great" | "ok" | "bad";
 export type TxType = "income" | "expense";
 
+export interface ScheduledTransaction {
+  id: string;
+  type: TxType;
+  amount: number;
+  category: string | null;
+  description: string | null;
+  due_date: string;
+  paid: boolean;
+  group_id: string | null;
+  installment_no: number | null;
+  installment_total: number | null;
+}
+
 export interface Investment {
   id: string;
   name: string;

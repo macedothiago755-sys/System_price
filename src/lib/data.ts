@@ -14,6 +14,7 @@ import {
   mockGoals,
   mockProjects,
   mockNotes,
+  mockScheduled,
 } from "@/lib/mock-data";
 import type {
   Profile,
@@ -26,7 +27,14 @@ import type {
   Goal,
   Project,
   Note,
+  ScheduledTransaction,
 } from "@/lib/types";
+import {
+  buildProjection,
+  forecastTotals,
+  type MonthProjection,
+  type ForecastTotals,
+} from "@/lib/forecast";
 import {
   summarize,
   financialHealthScore,
@@ -289,6 +297,40 @@ export async function getProjects(): Promise<{
     .order("created_at", { ascending: false });
 
   return { projects: (data as Project[]) ?? [], demo: false };
+}
+
+export interface ForecastData {
+  demo: boolean;
+  entries: ScheduledTransaction[];
+  projection: MonthProjection[];
+  totals: ForecastTotals;
+}
+
+/** Provisões: scheduled future income/expense + monthly cash-flow projection. */
+export async function getForecast(): Promise<ForecastData> {
+  const user = await getCurrentUser();
+  const entries = await (async () => {
+    if (!user) return mockScheduled;
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("scheduled_transactions")
+      .select(
+        "id, type, amount, category, description, due_date, paid, group_id, installment_no, installment_total"
+      )
+      .eq("user_id", user.id)
+      .order("due_date", { ascending: true });
+    return ((data as ScheduledTransaction[]) ?? []).map((e) => ({
+      ...e,
+      amount: Number(e.amount),
+    }));
+  })();
+
+  return {
+    demo: !user,
+    entries,
+    projection: buildProjection(entries),
+    totals: forecastTotals(entries.filter((e) => !e.paid)),
+  };
 }
 
 /** Knowledge Hub notes. */

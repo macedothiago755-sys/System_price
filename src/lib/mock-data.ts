@@ -10,6 +10,7 @@ import type {
   Goal,
   Project,
   Note,
+  ScheduledTransaction,
 } from "./types";
 import type { Transaction } from "./finance";
 
@@ -140,6 +141,21 @@ export const mockInvestments: Investment[] = [
   { id: "inv2", name: "ETF S&P 500 (IVVB11)", asset_type: "stock", amount: 18000, yield_pct: 14.2, goal: "Longo prazo" },
   { id: "inv3", name: "Fundo Imobiliário (HGLG11)", asset_type: "real_estate", amount: 9000, yield_pct: 8.5, goal: "Renda passiva" },
   { id: "inv4", name: "Bitcoin", asset_type: "crypto", amount: 5000, yield_pct: 22.0, goal: "Alto risco" },
+];
+
+const futureMonth = (n: number, day = 10) => {
+  const d = new Date();
+  d.setMonth(d.getMonth() + n, day);
+  return d.toISOString().slice(0, 10);
+};
+
+export const mockScheduled: ScheduledTransaction[] = [
+  { id: "s1", type: "income", amount: 12000, category: "salario", description: "Salário", due_date: futureMonth(0, 5), paid: false, group_id: null, installment_no: null, installment_total: null },
+  { id: "s2", type: "income", amount: 12000, category: "salario", description: "Salário", due_date: futureMonth(1, 5), paid: false, group_id: null, installment_no: null, installment_total: null },
+  { id: "s3", type: "expense", amount: 850, category: "outros", description: "Notebook 1/6", due_date: futureMonth(0, 15), paid: false, group_id: "g-nb", installment_no: 1, installment_total: 6 },
+  { id: "s4", type: "expense", amount: 850, category: "outros", description: "Notebook 2/6", due_date: futureMonth(1, 15), paid: false, group_id: "g-nb", installment_no: 2, installment_total: 6 },
+  { id: "s5", type: "expense", amount: 850, category: "outros", description: "Notebook 3/6", due_date: futureMonth(2, 15), paid: false, group_id: "g-nb", installment_no: 3, installment_total: 6 },
+  { id: "s6", type: "expense", amount: 3200, category: "moradia", description: "Aluguel", due_date: futureMonth(1, 10), paid: false, group_id: null, installment_no: null, installment_total: null },
 ];
 
 export const mockHealthHistory: HealthMetric[] = Array.from(
