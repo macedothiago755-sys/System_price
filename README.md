@@ -61,8 +61,11 @@ simulador de compras com IA), Investimentos (carteira + distribuição), e
 Health Intelligence (Performance Score, métricas, gráfico de tendência,
 registro manual, Polar Flow preparado).
 
-**Fases seguintes (estrutura pronta):** Work Hub + Meeting Intelligence,
-Knowledge Hub, Goals + Weekly Review, Google Calendar e automações n8n.
+**Módulos de produtividade (implementados):** Goals Dashboard + Weekly Review
+com relatório por IA, Work Hub + Meeting Intelligence (ata → resumo/decisões/
+ações via IA), e Knowledge Hub com busca inteligente nas suas notas.
+
+**Fase 4 (estrutura pronta):** Agenda com Google Calendar e automações n8n.
 
 Veja o roadmap completo em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 

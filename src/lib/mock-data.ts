@@ -7,6 +7,9 @@ import type {
   AiInsight,
   DailyCheckin,
   Investment,
+  Goal,
+  Project,
+  Note,
 } from "./types";
 import type { Transaction } from "./finance";
 
@@ -156,6 +159,25 @@ export const mockHealthHistory: HealthMetric[] = Array.from(
     };
   }
 );
+
+export const mockGoals: Goal[] = [
+  { id: "g1", title: "Reserva de emergência", category: "finance", target_value: 60000, current_value: 42000, unit: "R$", deadline: "2026-12-31", status: "active" },
+  { id: "g2", title: "Correr 10km sem parar", category: "health", target_value: 10, current_value: 6.5, unit: "km", deadline: "2026-09-30", status: "active" },
+  { id: "g3", title: "Lançar o produto novo", category: "career", target_value: 100, current_value: 70, unit: "%", deadline: "2026-08-15", status: "active" },
+  { id: "g4", title: "Ler 24 livros no ano", category: "learning", target_value: 24, current_value: 11, unit: "livros", deadline: "2026-12-31", status: "active" },
+];
+
+export const mockProjects: Project[] = [
+  { id: "pr1", name: "Lançamento Produto X", objective: "Levar o produto ao mercado", status: "active", deadline: "2026-08-15" },
+  { id: "pr2", name: "Rebranding", objective: "Nova identidade visual", status: "paused", deadline: "2026-10-01" },
+  { id: "pr3", name: "Automação de marketing", objective: "Reduzir trabalho manual com n8n", status: "active", deadline: "2026-07-20" },
+];
+
+export const mockNotes: Note[] = [
+  { id: "n1", title: "Ideia: newsletter semanal", content: "Enviar resumo de aprendizados toda sexta. Tema rotativo: IA, produtividade, finanças.", kind: "idea", tags: ["conteúdo", "ia"] },
+  { id: "n2", title: "Curso de System Design", content: "Anotações sobre escalabilidade, cache, filas e bancos. Revisar capítulo de sharding.", kind: "course", tags: ["estudo", "engenharia"] },
+  { id: "n3", title: "Reunião com cliente — pontos-chave", content: "Cliente quer foco em performance e prazo curto. Orçamento aprovado.", kind: "note", tags: ["trabalho"] },
+];
 
 export const mockInsights: AiInsight[] = [
   {

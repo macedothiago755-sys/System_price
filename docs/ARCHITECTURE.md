@@ -87,12 +87,13 @@ prompts — é o que torna o assistente "pessoal" de verdade.
 
 ## 7. Roadmap (fases do brief)
 
-| Fase | Entregas |
-| ---- | -------- |
-| **1** ✅ | Auth, Dashboard, Check-in, Tarefas, banco + gamificação |
-| **2** | Context builder de IA, planejamento avançado, insights, Goals/Weekly Review, Work Hub + Meeting Intelligence, Knowledge Hub |
-| **3** | Financeiro + Financial Health Score + simulador, Investimentos, Health Intelligence + Polar Flow, Performance Score na UI |
-| **4** | Google Calendar, automações n8n, notificações/lembretes |
+| Fase | Entregas | Status |
+| ---- | -------- | ------ |
+| **1** | Auth, Dashboard, Check-in, Tarefas, banco + gamificação | ✅ |
+| **2** | Camada de dados real, Server Actions, context builder de IA | ✅ |
+| **3** | Financeiro + Financial Health Score + simulador, Investimentos, Health Intelligence + Performance Score | ✅ |
+| **+**  | Goals + Weekly Review, Work Hub + Meeting Intelligence, Knowledge Hub (busca IA) | ✅ |
+| **4** | Google Calendar (Agenda), automações n8n, Polar Flow sync, notificações/PWA | 🔜 |
 
 ## 8. Decisões pendentes / sugestões futuras
 

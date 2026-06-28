@@ -1,18 +1,23 @@
-import { ComingSoon } from "@/components/layout/coming-soon";
+import { ProjectsList } from "@/features/work/projects-list";
+import { MeetingIntelligence } from "@/features/work/meeting-intelligence";
+import { getProjects } from "@/lib/data";
 
-export default function WorkPage() {
+export default async function WorkPage() {
+  const { projects } = await getProjects();
+
   return (
-    <ComingSoon
-      title="Work Hub"
-      phase="Fase 2"
-      subtitle="Projetos com objetivo, status, prazo e indicadores. Inclui Meeting Intelligence: cole uma ata e a IA gera resumo, decisões, responsáveis e próximas ações."
-      features={[
-        "Projetos (objetivo, status, prazo)",
-        "Tarefas, bloqueios e próximas ações",
-        "Decisões pendentes",
-        "Meeting Intelligence (ata → resumo IA)",
-        "Responsáveis e prazos automáticos",
-      ]}
-    />
+    <>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight">Work Hub</h1>
+        <p className="mt-1 text-muted-foreground">
+          Projetos, decisões e reuniões inteligentes.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <ProjectsList projects={projects} />
+        <MeetingIntelligence />
+      </div>
+    </>
   );
 }

@@ -22,6 +22,56 @@ export interface Investment {
   goal: string | null;
 }
 
+export type GoalCategory =
+  | "finance"
+  | "health"
+  | "career"
+  | "relationship"
+  | "learning";
+
+export interface Goal {
+  id: string;
+  title: string;
+  category: GoalCategory;
+  target_value: number | null;
+  current_value: number | null;
+  unit: string | null;
+  deadline: string | null;
+  status: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  objective: string | null;
+  status: string;
+  deadline: string | null;
+}
+
+export interface Note {
+  id: string;
+  title: string | null;
+  content: string | null;
+  kind: string;
+  tags: string[];
+  created_at?: string;
+}
+
+export interface MeetingActionItem {
+  task: string;
+  owner: string | null;
+  due: string | null;
+}
+
+export interface Meeting {
+  id: string;
+  title: string | null;
+  summary: string | null;
+  decisions: string[];
+  action_items: MeetingActionItem[];
+  created_at?: string;
+}
+
 export interface Profile {
   id: string;
   full_name: string | null;

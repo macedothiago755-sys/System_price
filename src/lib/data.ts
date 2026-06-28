@@ -11,6 +11,9 @@ import {
   mockTransactions,
   mockInvestments,
   mockHealthHistory,
+  mockGoals,
+  mockProjects,
+  mockNotes,
 } from "@/lib/mock-data";
 import type {
   Profile,
@@ -20,6 +23,9 @@ import type {
   Task,
   EnergyLevel,
   Investment,
+  Goal,
+  Project,
+  Note,
 } from "@/lib/types";
 import {
   summarize,
@@ -250,4 +256,52 @@ export async function getHealthData(): Promise<HealthData> {
     latest: history.length ? history[history.length - 1] : null,
     history,
   };
+}
+
+/** Active goals. */
+export async function getGoals(): Promise<{ goals: Goal[]; demo: boolean }> {
+  const user = await getCurrentUser();
+  if (!user) return { goals: mockGoals, demo: true };
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("goals")
+    .select("id, title, category, target_value, current_value, unit, deadline, status")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  return { goals: (data as Goal[]) ?? [], demo: false };
+}
+
+/** Projects for the Work Hub. */
+export async function getProjects(): Promise<{
+  projects: Project[];
+  demo: boolean;
+}> {
+  const user = await getCurrentUser();
+  if (!user) return { projects: mockProjects, demo: true };
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("projects")
+    .select("id, name, objective, status, deadline")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  return { projects: (data as Project[]) ?? [], demo: false };
+}
+
+/** Knowledge Hub notes. */
+export async function getNotes(): Promise<{ notes: Note[]; demo: boolean }> {
+  const user = await getCurrentUser();
+  if (!user) return { notes: mockNotes, demo: true };
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("notes")
+    .select("id, title, content, kind, tags, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  return { notes: (data as Note[]) ?? [], demo: false };
 }
