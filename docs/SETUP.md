@@ -74,19 +74,25 @@ Confira em **Table Editor** se as tabelas (`profiles`, `tasks`, `daily_checkins`
 
 ---
 
-## 4. Configurar autenticação (magic link)
+## 4. Configurar autenticação (e-mail + senha)
 
-1. Em **Authentication → Providers**, mantenha **Email** habilitado.
-2. Em **Authentication → URL Configuration**:
+A autenticação já está **totalmente funcional** (login, cadastro, logout e proteção
+de rotas). Usa **e-mail + senha** por padrão.
+
+1. Em **Authentication → Providers → Email**, mantenha habilitado.
+2. **Para testar na hora (recomendado):** desligue **"Confirm email"** em
+   **Authentication → Providers → Email**. Assim, ao criar a conta você já entra
+   direto, sem esperar e-mail de confirmação.
+   - Se deixar ligado, o Supabase envia um e-mail de confirmação (pode cair no spam
+     e tem limite no plano free).
+3. Em **Authentication → URL Configuration**:
    - **Site URL**: `http://localhost:3000` (em produção, a URL da Vercel)
-   - **Redirect URLs**: adicione `http://localhost:3000/**` (e depois a URL de produção `https://SEU-APP.vercel.app/**`)
+   - **Redirect URLs**: `http://localhost:3000/**` (e depois `https://SEU-APP.vercel.app/**`)
 
-> ℹ️ A tela `/login` já está preparada para o fluxo de **magic link** via Supabase
-> Auth. Para ativá-la de ponta a ponta, descomente a chamada
-> `supabase.auth.signInWithOtp({ email })` em `src/app/login/page.tsx` e, se quiser
-> **forçar login**, descomente o bloco de enforcement em `src/middleware.ts`.
-> Enquanto isso, com as env vars presentes, as páginas já passam a ler dados reais
-> do usuário autenticado.
+> ℹ️ Com as env vars do Supabase presentes, o middleware **exige login**: rotas
+> protegidas redirecionam para `/login`. Sem as env vars, o app roda em modo demo
+> aberto. Crie sua conta na tela inicial e comece a inserir seus dados — tudo passa
+> a persistir no seu Supabase.
 
 ---
 

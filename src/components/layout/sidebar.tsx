@@ -16,6 +16,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/features/auth/logout-button";
 
 const nav = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -68,9 +69,10 @@ export function Sidebar() {
         })}
       </nav>
 
-      <p className="px-3 text-[10px] text-muted-foreground/60">
-        v0.1 · Fase 1
-      </p>
+      <div className="mt-2 border-t border-border/60 pt-2">
+        <LogoutButton />
+        <p className="px-3 pt-2 text-[10px] text-muted-foreground/60">v0.1</p>
+      </div>
     </aside>
   );
 }

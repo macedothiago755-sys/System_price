@@ -30,13 +30,23 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // To enforce auth, uncomment:
-  // const { data: { user } } = await supabase.auth.getUser();
-  // if (!user && !request.nextUrl.pathname.startsWith("/login")) {
-  //   return NextResponse.redirect(new URL("/login", request.url));
-  // }
+  const path = request.nextUrl.pathname;
+  const isPublic =
+    path.startsWith("/login") || path.startsWith("/auth");
+
+  // Not logged in → send to login (except on public routes).
+  if (!user && !isPublic) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Already logged in but on /login → send to the dashboard.
+  if (user && path.startsWith("/login")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
   return response;
 }
