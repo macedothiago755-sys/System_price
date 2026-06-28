@@ -7,6 +7,9 @@ import {
   Footprints,
   Flame,
   Watch,
+  Dumbbell,
+  Gauge,
+  Heart,
 } from "lucide-react";
 import {
   AreaChart,
@@ -42,6 +45,31 @@ export function HealthDashboard({
     { label: "Passos", value: latest?.steps != null ? latest.steps.toLocaleString("pt-BR") : "—", icon: Footprints, color: "text-emerald-400" },
     { label: "Calorias", value: latest?.calories != null ? latest.calories.toLocaleString("pt-BR") : "—", icon: Flame, color: "text-amber-400" },
   ];
+
+  if (latest?.strain != null || latest?.tolerance != null) {
+    metrics.push({
+      label: "Esforço × Tol.",
+      value: `${latest?.strain ?? "—"} / ${latest?.tolerance ?? "—"}`,
+      icon: Gauge,
+      color: "text-orange-400",
+    });
+  }
+  if (latest?.cardio_status) {
+    metrics.push({
+      label: "Status cardio",
+      value: latest.cardio_status,
+      icon: Heart,
+      color: "text-rose-400",
+    });
+  }
+  if (latest?.workout_sport || latest?.workout_minutes != null) {
+    metrics.push({
+      label: "Treino",
+      value: `${latest?.workout_sport ?? "—"}${latest?.workout_minutes != null ? ` · ${latest.workout_minutes}min` : ""}`,
+      icon: Dumbbell,
+      color: "text-violet-400",
+    });
+  }
 
   const chartData = history.map((h) => ({
     date: h.date.slice(5),

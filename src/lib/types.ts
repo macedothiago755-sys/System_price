@@ -129,6 +129,11 @@ export interface HealthMetric {
   training_load: number | null;
   steps: number | null;
   calories: number | null;
+  cardio_status?: string | null;
+  strain?: number | null;
+  tolerance?: number | null;
+  workout_sport?: string | null;
+  workout_minutes?: number | null;
 }
 
 export interface AiInsight {

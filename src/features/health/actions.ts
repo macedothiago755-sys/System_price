@@ -14,6 +14,11 @@ export interface HealthInput {
   training_load: number | null;
   steps: number | null;
   calories: number | null;
+  cardio_status: string | null;
+  strain: number | null;
+  tolerance: number | null;
+  workout_sport: string | null;
+  workout_minutes: number | null;
 }
 
 type Result = { ok: boolean; error?: string; demo?: boolean };
@@ -36,6 +41,11 @@ export async function logHealth(input: HealthInput): Promise<Result> {
       training_load: input.training_load,
       steps: input.steps,
       calories: input.calories,
+      cardio_status: input.cardio_status,
+      strain: input.strain,
+      tolerance: input.tolerance,
+      workout_sport: input.workout_sport,
+      workout_minutes: input.workout_minutes,
       source: "manual",
     },
     { onConflict: "user_id,date" }
