@@ -3,11 +3,12 @@ import { StateCard } from "@/features/dashboard/state-card";
 import { PrioritiesCard } from "@/features/dashboard/priorities-card";
 import { AgendaCard } from "@/features/dashboard/agenda-card";
 import { InsightsCard } from "@/features/dashboard/insights-card";
+import { RoutineNowCard } from "@/features/dashboard/routine-now-card";
 import { greeting, formatLongDate } from "@/lib/utils";
-import { getDashboardData } from "@/lib/data";
+import { getDashboardData, getRoutine } from "@/lib/data";
 
 export default async function DashboardPage() {
-  const data = await getDashboardData();
+  const [data, routine] = await Promise.all([getDashboardData(), getRoutine()]);
 
   return (
     <>
@@ -29,6 +30,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <StateCard checkin={data.checkin} health={data.health} />
+          <RoutineNowCard blocks={routine.blocks} />
           <PrioritiesCard priorities={data.priorities} />
         </div>
         <div className="space-y-5">

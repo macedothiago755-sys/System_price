@@ -25,6 +25,7 @@ export interface UserContext {
     next: Array<{ description: string | null; amount: number; due: string }>;
   } | null;
   goals: Array<{ title: string; category: string; current: number | null; target: number | null }>;
+  routineToday: Array<{ time: string | null; title: string; category: string }>;
 }
 
 const since = (days: number) =>
@@ -35,8 +36,11 @@ export async function buildUserContext(): Promise<UserContext | null> {
   const user = await getCurrentUser();
   if (!user) return null;
 
+  const jsDay = new Date().getDay();
+  const weekday = jsDay === 0 ? 7 : jsDay; // 1=Seg..7=Dom
+
   const supabase = createClient();
-  const [profile, checkins, health, tasks, tx, sched, goals] = await Promise.all([
+  const [profile, checkins, health, tasks, tx, sched, goals, routine] = await Promise.all([
     supabase
       .from("profiles")
       .select("level, xp, streak_days")
@@ -78,6 +82,12 @@ export async function buildUserContext(): Promise<UserContext | null> {
       .select("title, category, current_value, target_value")
       .eq("user_id", user.id)
       .eq("status", "active"),
+    supabase
+      .from("routine_blocks")
+      .select("start_time, title, category")
+      .eq("user_id", user.id)
+      .eq("weekday", weekday)
+      .order("start_time", { ascending: true }),
   ]);
 
   const finance30d = (tx.data ?? []).reduce(
@@ -112,6 +122,13 @@ export async function buildUserContext(): Promise<UserContext | null> {
     openTasks: tasks.data ?? [],
     finance30d: tx.data ? finance30d : null,
     upcomingDebts,
+    routineToday: (
+      (routine.data ?? []) as Array<{
+        start_time: string | null;
+        title: string;
+        category: string;
+      }>
+    ).map((r) => ({ time: r.start_time, title: r.title, category: r.category })),
     goals: (goals.data ?? []).map(
       (g: {
         title: string;
