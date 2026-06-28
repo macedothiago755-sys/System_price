@@ -1,12 +1,33 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { askGemini, geminiKey } from "./gemini";
 
 /**
- * Single entry point to the Anthropic Claude API.
- * Modules should NOT instantiate Anthropic directly — they call the typed
- * helpers in `lib/ai/*` so prompts, model and context-building stay centralized.
+ * Single entry point to the AI layer. Supports two providers, chosen by env:
+ *   - Anthropic Claude  (ANTHROPIC_API_KEY)  — paid
+ *   - Google Gemini     (GEMINI_API_KEY)     — free tier
+ * Anthropic wins if both are set. Modules call these helpers, never an SDK.
  */
 
 const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
+
+export interface ClaudeOptions {
+  system?: string;
+  maxTokens?: number;
+  temperature?: number;
+}
+
+export type AiProvider = "anthropic" | "gemini" | null;
+
+export function aiProvider(): AiProvider {
+  if (process.env.ANTHROPIC_API_KEY) return "anthropic";
+  if (geminiKey()) return "gemini";
+  return null;
+}
+
+/** True when any AI provider is configured. */
+export function aiEnabled(): boolean {
+  return aiProvider() !== null;
+}
 
 let _client: Anthropic | null = null;
 function client() {
@@ -16,16 +37,9 @@ function client() {
   return _client;
 }
 
-export interface ClaudeOptions {
-  system?: string;
-  maxTokens?: number;
-  temperature?: number;
-}
-
-/** Low-level: send a prompt, get plain text back. */
-export async function askClaude(
+async function askAnthropic(
   prompt: string,
-  opts: ClaudeOptions = {}
+  opts: ClaudeOptions
 ): Promise<string> {
   const res = await client().messages.create({
     model: MODEL,
@@ -40,6 +54,17 @@ export async function askClaude(
     .map((b) => b.text)
     .join("\n")
     .trim();
+}
+
+/** Low-level: send a prompt, get plain text back (provider-agnostic). */
+export async function askClaude(
+  prompt: string,
+  opts: ClaudeOptions = {}
+): Promise<string> {
+  const provider = aiProvider();
+  if (provider === "gemini") return askGemini(prompt, opts);
+  if (provider === "anthropic") return askAnthropic(prompt, opts);
+  throw new Error("Nenhum provedor de IA configurado.");
 }
 
 /** Ask Claude for strict JSON and parse it. Throws if the response is not valid JSON. */

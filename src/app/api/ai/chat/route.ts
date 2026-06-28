@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { askClaude } from "@/lib/ai/claude";
+import { askClaude, aiEnabled } from "@/lib/ai/claude";
 import { buildUserContext } from "@/lib/ai/context";
 
 const SYSTEM = `Você é o Assistente do THIAGO OS, um sistema operacional pessoal.
@@ -18,10 +18,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!aiEnabled()) {
     return NextResponse.json({
       reply:
-        "🔌 Conecte sua ANTHROPIC_API_KEY no .env.local para ativar o assistente. " +
+        "🔌 Configure ANTHROPIC_API_KEY ou GEMINI_API_KEY no .env.local para ativar o assistente. " +
         "Quando ativo, eu uso seus dados (sono, energia, tarefas, finanças) para responder de verdade.",
       stub: true,
     });

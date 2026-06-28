@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { askClaudeJSON } from "@/lib/ai/claude";
+import { askClaudeJSON, aiEnabled } from "@/lib/ai/claude";
 import { getFinanceData } from "@/lib/data";
 
 interface PurchaseVerdict {
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
   const { summary } = await getFinanceData();
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!aiEnabled()) {
     const affordable = price <= summary.balance * 0.3;
     const stub: PurchaseVerdict = {
       verdict: affordable ? "sim" : price <= summary.balance ? "talvez" : "nao",
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
           : 100
       }% do seu saldo dos últimos 30 dias.`,
       recommendation:
-        "🔌 Conecte a ANTHROPIC_API_KEY para uma análise completa com seus objetivos.",
+        "🔌 Configure uma chave de IA (ANTHROPIC_API_KEY ou GEMINI_API_KEY) para uma análise completa.",
     };
     return NextResponse.json({ ...stub, stub: true });
   }

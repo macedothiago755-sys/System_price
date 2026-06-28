@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { askClaude } from "@/lib/ai/claude";
+import { askClaude, aiEnabled } from "@/lib/ai/claude";
 import { getNotes } from "@/lib/data";
 
 const SYSTEM = `Você é a busca inteligente do Knowledge Hub do THIAGO OS. Recebe uma pergunta e
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
   const { notes } = await getNotes();
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!aiEnabled()) {
     const q = query.toLowerCase();
     const hits = notes.filter(
       (n) =>
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       answer: hits.length
         ? `Encontrei ${hits.length} nota(s): ${hits
             .map((n) => `“${n.title}”`)
-            .join(", ")}. 🔌 Conecte a ANTHROPIC_API_KEY para respostas sintetizadas.`
+            .join(", ")}. 🔌 Configure uma chave de IA para respostas sintetizadas.`
         : "Nenhuma nota corresponde à busca.",
       stub: true,
     });

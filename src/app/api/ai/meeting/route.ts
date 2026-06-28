@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { analyzeMeeting } from "@/lib/ai/meeting";
+import { aiEnabled } from "@/lib/ai/claude";
 
 /** POST /api/ai/meeting  { raw: string } -> structured meeting summary */
 export async function POST(req: Request) {
@@ -8,12 +9,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "raw is required" }, { status: 400 });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!aiEnabled()) {
     const firstLine = raw.split("\n").find((l) => l.trim())?.slice(0, 60) ?? "Reunião";
     return NextResponse.json({
       title: firstLine,
       summary:
-        "🔌 Conecte a ANTHROPIC_API_KEY para gerar resumo, decisões e próximas ações automaticamente.",
+        "🔌 Configure uma chave de IA (ANTHROPIC_API_KEY ou GEMINI_API_KEY) para gerar resumo, decisões e próximas ações.",
       decisions: [],
       action_items: [],
       stub: true,

@@ -97,13 +97,28 @@ de rotas). Usa **e-mail + senha** por padrão.
 
 ---
 
-## 5. Chave da Anthropic (Claude)
+## 5. Chave de IA — escolha UM provedor
+
+O app funciona com **Anthropic Claude** (pago) ou **Google Gemini** (tem nível
+**gratuito**). Se as duas chaves existirem, a Anthropic tem prioridade.
+
+### Opção A — Google Gemini (grátis, recomendado para começar)
+
+1. Acesse https://aistudio.google.com/app/apikey (login com conta Google).
+2. **Create API key** → copie.
+3. No `.env.local`:
+   ```env
+   GEMINI_API_KEY=sua_chave_aqui
+   GEMINI_MODEL=gemini-2.0-flash
+   ```
+
+### Opção B — Anthropic Claude (pago)
 
 1. Em https://console.anthropic.com → **API Keys → Create key**.
-2. Copie a chave (`sk-ant-...`) → `ANTHROPIC_API_KEY`.
-3. O modelo padrão é `claude-opus-4-8` (ajustável via `ANTHROPIC_MODEL`).
+2. `ANTHROPIC_API_KEY=sk-ant-...` (modelo via `ANTHROPIC_MODEL`, ex. `claude-haiku-4-5-20251001`).
+3. Requer saldo em **Plans & Billing**.
 
-Sem essa chave, as rotas de IA continuam respondendo em modo de fallback.
+Sem nenhuma chave, as rotas de IA respondem em modo de fallback.
 
 ---
 

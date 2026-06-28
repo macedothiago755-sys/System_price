@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { planTasks, type PlannedTask } from "@/lib/ai/planner";
+import { aiEnabled } from "@/lib/ai/claude";
 
 /**
  * POST /api/ai/plan
@@ -30,12 +31,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "brainDump is required" }, { status: 400 });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!aiEnabled()) {
     return NextResponse.json({
       tasks: splitFallback(brainDump),
       stub: true,
       warning:
-        "IA desligada (sem ANTHROPIC_API_KEY). Tarefas criadas a partir das suas linhas.",
+        "IA desligada (configure ANTHROPIC_API_KEY ou GEMINI_API_KEY). Tarefas criadas a partir das suas linhas.",
     });
   }
 
