@@ -45,6 +45,9 @@ npm run dev         # http://localhost:3000
 > (`src/lib/mock-data.ts`) e as rotas de IA têm _fallback_ determinístico.
 > Conecte Supabase + Anthropic para ativar dados reais e a IA.
 
+📘 **Setup completo (Supabase + Claude + deploy na Vercel):** veja
+[`docs/SETUP.md`](docs/SETUP.md).
+
 ---
 
 ## 🧠 Módulos
