@@ -6,7 +6,7 @@ import { Plus, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { EXPENSE_CATEGORIES } from "@/lib/finance";
+import { EXPENSE_CATEGORIES, categoryLabel } from "@/lib/finance";
 import type { TxType } from "@/lib/types";
 import { addScheduled } from "./forecast-actions";
 
@@ -99,11 +99,11 @@ export function ForecastForm() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm capitalize focus:border-primary focus:outline-none"
+              className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm focus:border-primary focus:outline-none"
             >
               {EXPENSE_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {categoryLabel(c)}
                 </option>
               ))}
             </select>

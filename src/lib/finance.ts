@@ -63,5 +63,31 @@ export const EXPENSE_CATEGORIES = [
   "transporte",
   "lazer",
   "investimentos",
+  "estudos",
+  "saude",
+  "impostos",
+  "beleza",
+  "viagens",
   "outros",
 ] as const;
+
+/** Display labels (with accents) for expense + income categories. */
+export const CATEGORY_LABELS: Record<string, string> = {
+  receita: "Receita",
+  salario: "Salário",
+  freela: "Freelance",
+  moradia: "Moradia",
+  alimentacao: "Alimentação",
+  transporte: "Transporte",
+  lazer: "Lazer",
+  investimentos: "Investimentos",
+  estudos: "Estudos",
+  saude: "Saúde",
+  impostos: "Impostos",
+  beleza: "Beleza",
+  viagens: "Viagens",
+  outros: "Outros",
+};
+
+export const categoryLabel = (c: string): string =>
+  CATEGORY_LABELS[c] ?? c.charAt(0).toUpperCase() + c.slice(1);

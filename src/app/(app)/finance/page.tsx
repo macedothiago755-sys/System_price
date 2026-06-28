@@ -5,18 +5,7 @@ import { getFinanceData } from "@/lib/data";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL } from "@/lib/utils";
-
-const categoryLabels: Record<string, string> = {
-  receita: "Receita",
-  salario: "Salário",
-  freela: "Freelance",
-  moradia: "Moradia",
-  alimentacao: "Alimentação",
-  transporte: "Transporte",
-  lazer: "Lazer",
-  investimentos: "Investimentos",
-  outros: "Outros",
-};
+import { categoryLabel } from "@/lib/finance";
 
 export default async function FinancePage() {
   const { transactions, summary, score } = await getFinanceData();
@@ -46,10 +35,10 @@ export default async function FinancePage() {
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm">
-                    {t.description || categoryLabels[t.category] || t.category}
+                    {t.description || categoryLabel(t.category)}
                   </p>
-                  <p className="text-xs capitalize text-muted-foreground">
-                    {categoryLabels[t.category] ?? t.category}
+                  <p className="text-xs text-muted-foreground">
+                    {categoryLabel(t.category)}
                   </p>
                 </div>
                 <span

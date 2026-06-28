@@ -5,16 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScoreRing } from "@/components/ui/score-ring";
 import { Progress } from "@/components/ui/progress";
 import { formatBRL } from "@/lib/utils";
-import type { FinanceSummary } from "@/lib/finance";
-
-const categoryLabels: Record<string, string> = {
-  moradia: "Moradia",
-  alimentacao: "Alimentação",
-  transporte: "Transporte",
-  lazer: "Lazer",
-  investimentos: "Investimentos",
-  outros: "Outros",
-};
+import { categoryLabel, type FinanceSummary } from "@/lib/finance";
 
 function scoreColor(score: number) {
   if (score >= 70) return "hsl(var(--success))";
@@ -66,7 +57,7 @@ export function FinanceDashboard({
             {summary.byCategory.map((c) => (
               <div key={c.category}>
                 <div className="mb-1 flex justify-between text-sm">
-                  <span>{categoryLabels[c.category] ?? c.category}</span>
+                  <span>{categoryLabel(c.category)}</span>
                   <span className="text-muted-foreground">
                     {formatBRL(c.total)}
                   </span>
