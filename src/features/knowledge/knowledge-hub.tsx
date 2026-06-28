@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Loader2, Search, Sparkles, Lightbulb, GraduationCap, FileText, StickyNote } from "lucide-react";
+import { Plus, Loader2, Search, Sparkles, Lightbulb, GraduationCap, FileText, StickyNote, Upload } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,37 @@ export function KnowledgeHub({ notes }: { notes: Note[] }) {
   const [kind, setKind] = useState("note");
   const [tags, setTags] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // upload
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadMsg(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await fetch("/api/knowledge/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.error) {
+        setUploadMsg(`⚠️ ${data.error}`);
+      } else {
+        setUploadMsg(
+          `✅ "${data.title}" importado${data.truncated ? " (texto longo — parte salva)" : ""}.`
+        );
+        router.refresh();
+      }
+    } catch {
+      setUploadMsg("⚠️ Falha no upload.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   async function search() {
     if (!query.trim()) return;
@@ -93,7 +124,43 @@ export function KnowledgeHub({ notes }: { notes: Note[] }) {
       </Card>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
+       <div className="space-y-5 lg:col-span-1">
+        <Card>
+          <CardTitle className="mb-1 flex items-center gap-2">
+            <Upload className="h-4 w-4 text-accent" /> Importar aula
+          </CardTitle>
+          <p className="mb-3 text-xs text-muted-foreground">
+            PDF, Excel, PPTX, CSV ou TXT. O texto é extraído e a IA passa a
+            lembrar do conteúdo.
+          </p>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.xlsx,.xls,.csv,.pptx,.txt,.md"
+            onChange={handleUpload}
+            disabled={uploading}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+          >
+            {uploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
+            {uploading ? "Processando…" : "Escolher arquivo"}
+          </Button>
+          {uploadMsg && (
+            <p className="mt-2 text-xs text-muted-foreground">{uploadMsg}</p>
+          )}
+        </Card>
+
+        <Card>
           <h2 className="mb-3 text-sm font-medium">Nova nota</h2>
           <form onSubmit={handleCreate} className="space-y-2">
             <input
@@ -132,6 +199,7 @@ export function KnowledgeHub({ notes }: { notes: Note[] }) {
             </Button>
           </form>
         </Card>
+       </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-2">
           {notes.map((n) => {
