@@ -16,6 +16,7 @@ export function TransactionForm() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string>("alimentacao");
   const [description, setDescription] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -26,6 +27,7 @@ export function TransactionForm() {
       amount: Number(amount),
       category: type === "income" ? "receita" : category,
       description,
+      date,
     });
     setSaving(false);
     setAmount("");
@@ -87,6 +89,18 @@ export function TransactionForm() {
           placeholder="Descrição (opcional)"
           className="w-full rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
+
+        <div>
+          <label className="mb-1 block text-xs text-muted-foreground">
+            Data (define o mês na aba Provisões)
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          />
+        </div>
 
         <Button type="submit" className="w-full" disabled={saving}>
           {saving ? (

@@ -229,7 +229,7 @@ export async function getFinanceData(): Promise<FinanceData> {
     type: p.type,
     amount: Number(p.amount),
     category: p.category ?? "outros",
-    description: p.description ? `${p.description} (provisão)` : "Provisão",
+    description: p.description ?? "Lançamento",
     date: p.due_date,
   }));
 
