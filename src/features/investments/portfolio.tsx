@@ -1,11 +1,13 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { TrendingUp, Trash2 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL } from "@/lib/utils";
 import type { Investment } from "@/lib/types";
+import { deleteInvestment } from "./actions";
 
 const typeLabels: Record<string, string> = {
   fixed_income: "Renda Fixa",
@@ -30,6 +32,13 @@ export function Portfolio({
   investments: Investment[];
   total: number;
 }) {
+  const router = useRouter();
+
+  async function remove(id: string) {
+    await deleteInvestment(id);
+    router.refresh();
+  }
+
   const byType = new Map<string, number>();
   for (const i of investments) {
     const key = i.asset_type ?? "fund";
@@ -92,6 +101,13 @@ export function Portfolio({
                 <span className="text-sm font-medium">
                   {formatBRL(i.amount)}
                 </span>
+                <button
+                  onClick={() => remove(i.id)}
+                  title="Remover ativo"
+                  className="text-muted-foreground transition-colors hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
             </div>
           ))}
