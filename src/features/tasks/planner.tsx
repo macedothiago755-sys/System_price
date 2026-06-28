@@ -22,9 +22,11 @@ export function Planner() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<PlannedTask[] | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function handlePlan() {
     setLoading(true);
+    setNotice(null);
     try {
       const res = await fetch("/api/ai/plan", {
         method: "POST",
@@ -32,7 +34,16 @@ export function Planner() {
         body: JSON.stringify({ brainDump: text }),
       });
       const data = await res.json();
-      setResult(data.tasks ?? []);
+      if (data.error) {
+        setNotice(data.error);
+        setResult([]);
+      } else {
+        setResult(data.tasks ?? []);
+        if (data.warning) setNotice(data.warning);
+      }
+    } catch {
+      setNotice("Não consegui falar com o servidor. Tente de novo.");
+      setResult([]);
     } finally {
       setLoading(false);
     }
@@ -79,7 +90,20 @@ export function Planner() {
         Organizar com IA
       </Button>
 
-      {result && (
+      {notice && (
+        <p className="mt-3 rounded-lg border border-warning/20 bg-warning/10 p-2 text-xs text-warning">
+          {notice}
+        </p>
+      )}
+
+      {result && result.length === 0 && !notice && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Não consegui extrair tarefas desse texto. Tente listar uma atividade
+          por linha.
+        </p>
+      )}
+
+      {result && result.length > 0 && (
         <div className="mt-4 space-y-2">
           {result.map((t, i) => (
             <div

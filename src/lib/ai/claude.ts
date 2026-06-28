@@ -53,6 +53,22 @@ export async function askClaudeJSON<T>(
       (opts.system ? opts.system + "\n\n" : "") +
       "Responda APENAS com JSON válido, sem markdown, sem cercas de código.",
   });
-  const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  // Strip code fences, then extract the outermost JSON object/array if the
+  // model wrapped it in prose — more tolerant than a strict parse.
+  let cleaned = raw.replace(/```(?:json)?/gi, "").trim();
+  const firstObj = cleaned.indexOf("{");
+  const firstArr = cleaned.indexOf("[");
+  const start =
+    firstArr === -1
+      ? firstObj
+      : firstObj === -1
+        ? firstArr
+        : Math.min(firstObj, firstArr);
+  if (start > 0) {
+    const lastObj = cleaned.lastIndexOf("}");
+    const lastArr = cleaned.lastIndexOf("]");
+    const end = Math.max(lastObj, lastArr);
+    if (end > start) cleaned = cleaned.slice(start, end + 1);
+  }
   return JSON.parse(cleaned) as T;
 }

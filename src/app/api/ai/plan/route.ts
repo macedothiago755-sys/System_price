@@ -1,44 +1,61 @@
 import { NextResponse } from "next/server";
-import { planTasks } from "@/lib/ai/planner";
+import { planTasks, type PlannedTask } from "@/lib/ai/planner";
 
 /**
  * POST /api/ai/plan
  * Body: { brainDump: string }
- * Returns: { tasks: PlannedTask[] }
+ * Returns: { tasks: PlannedTask[], stub?, warning? }
  *
- * Falls back to a deterministic stub when ANTHROPIC_API_KEY is not set,
- * so the UI works end-to-end during local development.
+ * Never returns an empty list when there is text: if the AI is unavailable
+ * or fails, we split the input into tasks locally and tell the user why.
  */
+function splitFallback(text: string): PlannedTask[] {
+  return text
+    .split(/\r?\n|;/)
+    .map((t) => t.replace(/^[-*•\d.)\s]+/, "").trim())
+    .filter((t) => t.length > 1)
+    .map((title) => ({
+      title,
+      category: "personal" as const,
+      priority: "medium" as const,
+      energy_required: "medium" as const,
+      estimated_min: 30,
+    }));
+}
+
 export async function POST(req: Request) {
   const { brainDump } = await req.json();
 
-  if (!brainDump || typeof brainDump !== "string") {
+  if (!brainDump || typeof brainDump !== "string" || !brainDump.trim()) {
     return NextResponse.json({ error: "brainDump is required" }, { status: 400 });
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    const tasks = brainDump
-      .split(/\n|,|;/)
-      .map((t) => t.trim())
-      .filter(Boolean)
-      .map((title) => ({
-        title,
-        category: "work" as const,
-        priority: "medium" as const,
-        energy_required: "medium" as const,
-        estimated_min: 30,
-      }));
-    return NextResponse.json({ tasks, stub: true });
+    return NextResponse.json({
+      tasks: splitFallback(brainDump),
+      stub: true,
+      warning:
+        "IA desligada (sem ANTHROPIC_API_KEY). Tarefas criadas a partir das suas linhas.",
+    });
   }
 
   try {
     const tasks = await planTasks(brainDump);
+    if (!tasks.length) {
+      // AI ran but returned nothing usable — don't leave the user with 0.
+      return NextResponse.json({
+        tasks: splitFallback(brainDump),
+        warning:
+          "A IA não retornou tarefas estruturadas; usei suas linhas como base.",
+      });
+    }
     return NextResponse.json({ tasks });
   } catch (err) {
     console.error("[ai/plan]", err);
-    return NextResponse.json(
-      { error: "Failed to plan tasks" },
-      { status: 500 }
-    );
+    const message = err instanceof Error ? err.message : "erro desconhecido";
+    return NextResponse.json({
+      tasks: splitFallback(brainDump),
+      warning: `Falha na IA (${message}). Tarefas criadas a partir das suas linhas.`,
+    });
   }
 }

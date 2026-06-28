@@ -10,10 +10,18 @@ export interface PlannedTask {
 }
 
 const PLANNER_SYSTEM = `Você é o motor de planejamento do THIAGO OS, um sistema operacional pessoal.
-Recebe tarefas soltas escritas pelo usuário e as organiza.
-Para cada tarefa defina: category (work|personal|health|finance|learning),
-priority (low|medium|high|urgent), energy_required (low|medium|high) e
-estimated_min (estimativa realista em minutos).`;
+Recebe texto livre do usuário — pode ser uma lista de tarefas soltas OU uma rotina
+semanal com horários e dias da semana — e transforma em tarefas acionáveis.
+
+Regras:
+- Cada item/atividade vira UMA tarefa. Se houver rotina com horários (ex.: "Segunda
+  7:00 café da manhã"), crie uma tarefa por atividade e inclua o dia/horário no título
+  quando fizer sentido (ex.: "Seg 7h — Café da manhã").
+- SEMPRE retorne pelo menos uma tarefa quando houver qualquer conteúdo.
+- Para cada tarefa defina: title (string), category (work|personal|health|finance|learning),
+  priority (low|medium|high|urgent), energy_required (low|medium|high) e
+  estimated_min (inteiro, estimativa realista em minutos).
+- Responda em português do Brasil.`;
 
 /** Turn a free-text brain dump into structured, prioritized tasks. */
 export async function planTasks(brainDump: string): Promise<PlannedTask[]> {
