@@ -32,11 +32,14 @@ function dueInfo(due: string): { label: string; overdue: boolean } {
 
 export function UpcomingBillsCard({
   bills,
-  total,
+  monthTotal,
 }: {
   bills: ScheduledTransaction[];
-  total: number;
+  monthTotal: number;
 }) {
+  const monthName = new Intl.DateTimeFormat("pt-BR", { month: "long" })
+    .format(new Date())
+    .replace(/^./, (c) => c.toUpperCase());
   return (
     <Card>
       <CardHeader>
@@ -78,8 +81,12 @@ export function UpcomingBillsCard({
               );
             })}
             <div className="flex items-center justify-between border-t border-border/60 pt-3 text-sm">
-              <span className="text-muted-foreground">Total pendente</span>
-              <span className="font-semibold text-rose-400">{formatBRL(total)}</span>
+              <span className="text-muted-foreground">
+                Total pendente · {monthName}
+              </span>
+              <span className="font-semibold text-rose-400">
+                {formatBRL(monthTotal)}
+              </span>
             </div>
           </>
         )}

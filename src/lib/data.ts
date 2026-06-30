@@ -506,7 +506,15 @@ export async function getEvents(): Promise<{
 export interface UpcomingBillsData {
   demo: boolean;
   bills: ScheduledTransaction[];
-  total: number; // total pendente a pagar
+  monthTotal: number; // total pendente APENAS do mês em vigor
+}
+
+/** Total pendente a pagar só do mês atual, dado o conjunto de despesas não pagas. */
+function currentMonthTotal(bills: ScheduledTransaction[]): number {
+  const nowMonth = new Date().toISOString().slice(0, 7);
+  return bills
+    .filter((b) => b.due_date.slice(0, 7) === nowMonth)
+    .reduce((s, b) => s + b.amount, 0);
 }
 
 /** Próximas contas a pagar (provisões de despesa não pagas), ordenadas por vencimento. */
@@ -519,7 +527,7 @@ export async function getUpcomingBills(): Promise<UpcomingBillsData> {
     return {
       demo: true,
       bills: bills.slice(0, 6),
-      total: bills.reduce((s, b) => s + b.amount, 0),
+      monthTotal: currentMonthTotal(bills),
     };
   }
 
@@ -542,7 +550,7 @@ export async function getUpcomingBills(): Promise<UpcomingBillsData> {
   return {
     demo: false,
     bills: bills.slice(0, 6),
-    total: bills.reduce((s, b) => s + b.amount, 0),
+    monthTotal: currentMonthTotal(bills),
   };
 }
 

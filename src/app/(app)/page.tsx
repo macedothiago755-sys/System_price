@@ -45,7 +45,7 @@ export default async function DashboardPage() {
           <PrioritiesCard priorities={data.priorities} />
         </div>
         <div className="space-y-5">
-          <UpcomingBillsCard bills={bills.bills} total={bills.total} />
+          <UpcomingBillsCard bills={bills.bills} monthTotal={bills.monthTotal} />
           <AgendaCard events={events.events} />
           <InsightsCard insights={data.insights} />
         </div>
