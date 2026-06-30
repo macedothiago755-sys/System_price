@@ -4,11 +4,22 @@ import { PrioritiesCard } from "@/features/dashboard/priorities-card";
 import { AgendaCard } from "@/features/dashboard/agenda-card";
 import { InsightsCard } from "@/features/dashboard/insights-card";
 import { RoutineNowCard } from "@/features/dashboard/routine-now-card";
+import { UpcomingBillsCard } from "@/features/dashboard/upcoming-bills-card";
 import { greeting, formatLongDate } from "@/lib/utils";
-import { getDashboardData, getRoutine } from "@/lib/data";
+import {
+  getDashboardData,
+  getRoutine,
+  getUpcomingBills,
+  getEvents,
+} from "@/lib/data";
 
 export default async function DashboardPage() {
-  const [data, routine] = await Promise.all([getDashboardData(), getRoutine()]);
+  const [data, routine, bills, events] = await Promise.all([
+    getDashboardData(),
+    getRoutine(),
+    getUpcomingBills(),
+    getEvents(),
+  ]);
 
   return (
     <>
@@ -34,7 +45,8 @@ export default async function DashboardPage() {
           <PrioritiesCard priorities={data.priorities} />
         </div>
         <div className="space-y-5">
-          <AgendaCard />
+          <UpcomingBillsCard bills={bills.bills} total={bills.total} />
+          <AgendaCard events={events.events} />
           <InsightsCard insights={data.insights} />
         </div>
       </div>

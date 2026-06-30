@@ -429,6 +429,49 @@ export async function getEvents(): Promise<{
   return { events: (data as CalendarEvent[]) ?? [], demo: false };
 }
 
+export interface UpcomingBillsData {
+  demo: boolean;
+  bills: ScheduledTransaction[];
+  total: number; // total pendente a pagar
+}
+
+/** Próximas contas a pagar (provisões de despesa não pagas), ordenadas por vencimento. */
+export async function getUpcomingBills(): Promise<UpcomingBillsData> {
+  const user = await getCurrentUser();
+  if (!user) {
+    const bills = mockScheduled
+      .filter((e) => e.type === "expense" && !e.paid)
+      .sort((a, b) => a.due_date.localeCompare(b.due_date));
+    return {
+      demo: true,
+      bills: bills.slice(0, 6),
+      total: bills.reduce((s, b) => s + b.amount, 0),
+    };
+  }
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("scheduled_transactions")
+    .select(
+      "id, type, amount, category, description, due_date, paid, group_id, installment_no, installment_total"
+    )
+    .eq("user_id", user.id)
+    .eq("type", "expense")
+    .eq("paid", false)
+    .order("due_date", { ascending: true });
+
+  const bills = ((data as ScheduledTransaction[]) ?? []).map((b) => ({
+    ...b,
+    amount: Number(b.amount),
+  }));
+
+  return {
+    demo: false,
+    bills: bills.slice(0, 6),
+    total: bills.reduce((s, b) => s + b.amount, 0),
+  };
+}
+
 /** Knowledge Hub notes. */
 export async function getNotes(): Promise<{ notes: Note[]; demo: boolean }> {
   const user = await getCurrentUser();
