@@ -15,6 +15,8 @@ const typeLabels: Record<string, string> = {
   real_estate: "Imobiliário",
   crypto: "Cripto",
   fund: "Fundos",
+  vehicle: "Veículo",
+  property: "Imóvel",
 };
 
 const typeColors: Record<string, string> = {
@@ -23,6 +25,8 @@ const typeColors: Record<string, string> = {
   real_estate: "bg-sky-400",
   crypto: "bg-amber-400",
   fund: "bg-rose-400",
+  vehicle: "bg-orange-400",
+  property: "bg-teal-400",
 };
 
 export function Portfolio({

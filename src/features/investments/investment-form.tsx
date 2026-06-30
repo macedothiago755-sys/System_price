@@ -13,6 +13,8 @@ const assetTypes = [
   { value: "real_estate", label: "Imobiliário (FII)" },
   { value: "crypto", label: "Cripto" },
   { value: "fund", label: "Fundos" },
+  { value: "vehicle", label: "Veículo" },
+  { value: "property", label: "Imóvel" },
 ];
 
 export function InvestmentForm() {
