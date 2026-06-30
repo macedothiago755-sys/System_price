@@ -174,22 +174,43 @@ const since = (days: number) =>
 
 export interface FinanceData {
   demo: boolean;
+  month: string; // "YYYY-MM"
   transactions: Transaction[];
   summary: FinanceSummary;
   score: number;
 }
 
+/** First day of the month and first day of the next month (exclusive end). */
+function monthBounds(month: string): { start: string; next: string } {
+  const [y, m] = month.split("-").map(Number);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const start = `${y}-${pad(m)}-01`;
+  const next = m === 12 ? `${y + 1}-01-01` : `${y}-${pad(m + 1)}-01`;
+  return { start, next };
+}
+
 /**
- * Finance dashboard: last-30d transactions + provisões marcadas como pagas no
- * período (entram como gasto/recebido real) + summary + health score.
+ * Finance dashboard for a given month (default: mês atual). Inclui transações
+ * reais + provisões marcadas como pagas naquele mês (entram como gasto/recebido)
+ * + summary + health score.
  */
-export async function getFinanceData(): Promise<FinanceData> {
+export async function getFinanceData(month?: string): Promise<FinanceData> {
+  const m =
+    month && /^\d{4}-\d{2}$/.test(month)
+      ? month
+      : new Date().toISOString().slice(0, 7);
+  const { start, next } = monthBounds(m);
+
   const user = await getCurrentUser();
   if (!user) {
-    const summary = summarize(mockTransactions);
+    const filtered = mockTransactions.filter(
+      (t) => t.date >= start && t.date < next
+    );
+    const summary = summarize(filtered);
     return {
       demo: true,
-      transactions: mockTransactions,
+      month: m,
+      transactions: filtered,
       summary,
       score: financialHealthScore(summary),
     };
@@ -201,15 +222,17 @@ export async function getFinanceData(): Promise<FinanceData> {
       .from("financial_transactions")
       .select("id, type, amount, category, description, date")
       .eq("user_id", user.id)
-      .gte("date", since(30))
+      .gte("date", start)
+      .lt("date", next)
       .order("date", { ascending: false }),
-    // Provisões já pagas/recebidas no período viram lançamentos reais.
+    // Provisões pagas/recebidas no mês escolhido viram lançamentos reais.
     supabase
       .from("scheduled_transactions")
       .select("id, type, amount, category, description, due_date")
       .eq("user_id", user.id)
       .eq("paid", true)
-      .gte("due_date", since(30)),
+      .gte("due_date", start)
+      .lt("due_date", next),
   ]);
 
   const real = ((txRes.data as Transaction[]) ?? []).map((t) => ({
@@ -242,6 +265,7 @@ export async function getFinanceData(): Promise<FinanceData> {
   const summary = summarize(transactions);
   return {
     demo: false,
+    month: m,
     transactions,
     summary,
     score: financialHealthScore(summary),

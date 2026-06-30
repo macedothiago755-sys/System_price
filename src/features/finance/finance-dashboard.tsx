@@ -35,7 +35,7 @@ export function FinanceDashboard({
           {stats.map((s) => (
             <Card key={s.label}>
               <s.icon className={`mb-2 h-5 w-5 ${s.color}`} />
-              <p className="text-xs text-muted-foreground">{s.label} (30d)</p>
+              <p className="text-xs text-muted-foreground">{s.label} (mês)</p>
               <p className="text-xl font-semibold">{formatBRL(s.value)}</p>
             </Card>
           ))}

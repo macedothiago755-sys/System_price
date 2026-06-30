@@ -1,22 +1,28 @@
 import { FinanceDashboard } from "@/features/finance/finance-dashboard";
 import { TransactionForm } from "@/features/finance/transaction-form";
 import { PurchaseSimulator } from "@/features/finance/purchase-simulator";
+import { MonthFilter } from "@/features/finance/month-filter";
 import { getFinanceData } from "@/lib/data";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatBRL } from "@/lib/utils";
 import { categoryLabel } from "@/lib/finance";
 
-export default async function FinancePage() {
-  const { transactions, summary, score } = await getFinanceData();
+export default async function FinancePage({
+  searchParams,
+}: {
+  searchParams: { month?: string };
+}) {
+  const { transactions, summary, score, month } = await getFinanceData(
+    searchParams.month
+  );
 
   return (
     <>
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">
           Personal Finance
         </h1>
-        <Badge variant="outline">Últimos 30 dias</Badge>
+        <MonthFilter month={month} />
       </div>
 
       <FinanceDashboard summary={summary} score={score} />
