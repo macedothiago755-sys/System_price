@@ -17,7 +17,9 @@ export async function askGemini(
   opts: ClaudeOptions = {}
 ): Promise<string> {
   const key = geminiKey();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+  if (!key) throw new Error("GEMINI_API_KEY ausente.");
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
   const body: Record<string, unknown> = {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -32,19 +34,27 @@ export async function askGemini(
 
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    // Header auth works for all AI Studio key formats (AIza… and the newer AQ.…).
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify(body),
   });
 
   if (!res.ok) {
     const detail = await res.text();
-    throw new Error(`${res.status} ${detail}`);
+    throw new Error(`Gemini ${res.status}: ${detail.slice(0, 300)}`);
   }
 
   const data = await res.json();
-  const parts = data?.candidates?.[0]?.content?.parts ?? [];
-  return parts
+  const candidate = data?.candidates?.[0];
+  const parts = candidate?.content?.parts ?? [];
+  const text = parts
     .map((p: { text?: string }) => p.text ?? "")
     .join("")
     .trim();
+
+  if (!text) {
+    const reason = candidate?.finishReason ?? data?.promptFeedback?.blockReason;
+    throw new Error(`Gemini retornou vazio${reason ? ` (${reason})` : ""}.`);
+  }
+  return text;
 }

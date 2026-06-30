@@ -57,6 +57,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ reply });
   } catch (err) {
     console.error("[ai/chat]", err);
-    return NextResponse.json({ error: "Failed to reply" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "erro desconhecido";
+    return NextResponse.json(
+      { error: `Falha na IA: ${message}` },
+      { status: 200 }
+    );
   }
 }
