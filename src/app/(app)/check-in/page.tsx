@@ -1,6 +1,10 @@
 import { CheckinForm } from "@/features/checkin/checkin-form";
+import { CheckinHistory } from "@/features/checkin/checkin-history";
+import { getCheckins } from "@/lib/data";
 
-export default function CheckinPage() {
+export default async function CheckinPage() {
+  const { today, history } = await getCheckins();
+
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-6">
@@ -9,7 +13,8 @@ export default function CheckinPage() {
           Seu ritual de abertura. Leva menos de um minuto.
         </p>
       </div>
-      <CheckinForm />
+      <CheckinForm initial={today} />
+      <CheckinHistory history={history} />
     </div>
   );
 }

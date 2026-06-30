@@ -370,15 +370,23 @@ export async function getProjects(): Promise<{
 
 export interface ForecastData {
   demo: boolean;
+  from: string; // "YYYY-MM"
+  to: string; // "YYYY-MM"
   entries: ScheduledTransaction[];
   projection: MonthProjection[];
   totals: ForecastTotals;
 }
 
-/** Provisões: scheduled future income/expense + monthly cash-flow projection. */
-export async function getForecast(): Promise<ForecastData> {
+const monthOf = (iso: string) => iso.slice(0, 7);
+const validMonth = (m?: string) => (m && /^\d{4}-\d{2}$/.test(m) ? m : null);
+
+/** Provisões: scheduled income/expense + monthly projection, filtrável por intervalo de meses. */
+export async function getForecast(params?: {
+  from?: string;
+  to?: string;
+}): Promise<ForecastData> {
   const user = await getCurrentUser();
-  const entries = await (async () => {
+  const all = await (async () => {
     if (!user) return mockScheduled;
     const supabase = createClient();
     const { data } = await supabase
@@ -394,10 +402,26 @@ export async function getForecast(): Promise<ForecastData> {
     }));
   })();
 
+  const nowMonth = new Date().toISOString().slice(0, 7);
+  const from = validMonth(params?.from) ?? nowMonth;
+  // Default "to" = mês mais distante com lançamento (ou o próprio "from").
+  const furthest = all.reduce((mx, e) => {
+    const m = monthOf(e.due_date);
+    return m > mx ? m : mx;
+  }, from);
+  const to = validMonth(params?.to) ?? furthest;
+
+  const entries = all.filter((e) => {
+    const m = monthOf(e.due_date);
+    return m >= from && m <= to;
+  });
+
   return {
     demo: !user,
+    from,
+    to,
     entries,
-    projection: buildProjection(entries),
+    projection: buildProjection(entries, { from, until: `${to}-01` }),
     totals: forecastTotals(entries.filter((e) => !e.paid)),
   };
 }
@@ -432,6 +456,32 @@ export async function getRoutine(): Promise<{
     .order("start_time", { ascending: true });
 
   return { blocks: (data as RoutineBlock[]) ?? [], demo: false };
+}
+
+/** Today's check-in (if any) + recent history. */
+export async function getCheckins(): Promise<{
+  today: DailyCheckin | null;
+  history: DailyCheckin[];
+  demo: boolean;
+}> {
+  const user = await getCurrentUser();
+  if (!user) return { today: mockCheckin, history: [mockCheckin], demo: true };
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("daily_checkins")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("date", { ascending: false })
+    .limit(30);
+
+  const rows = (data as DailyCheckin[]) ?? [];
+  return {
+    today: rows.find((r) => r.date === todayStr) ?? null,
+    history: rows,
+    demo: false,
+  };
 }
 
 /** Upcoming calendar events (next 30 days). */

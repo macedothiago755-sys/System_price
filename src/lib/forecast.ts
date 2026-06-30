@@ -49,10 +49,13 @@ function monthsBetween(start: string, end: string): string[] {
  */
 export function buildProjection(
   entries: ScheduledTransaction[],
-  opts: { startingBalance?: number; until?: string } = {}
+  opts: { startingBalance?: number; from?: string; until?: string } = {}
 ): MonthProjection[] {
   const now = new Date();
-  const startKey = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
+  const startKey =
+    opts.from && /^\d{4}-\d{2}$/.test(opts.from)
+      ? opts.from
+      : `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
 
   const dueKeys = entries.map((e) => monthKeyOf(e.due_date));
   let endKey = opts.until ? monthKeyOf(opts.until) : startKey;

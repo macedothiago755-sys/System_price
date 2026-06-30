@@ -58,6 +58,7 @@ export function HealthLogForm() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const set = (k: string, v: string) =>
     setValues((prev) => ({ ...prev, [k]: v }));
@@ -66,7 +67,8 @@ export function HealthLogForm() {
     e.preventDefault();
     setSaving(true);
     setSaved(false);
-    await logHealth({
+    setError(null);
+    const res = await logHealth({
       date,
       sleep_duration: num(values.sleep_duration),
       sleep_score: num(values.sleep_score),
@@ -83,6 +85,10 @@ export function HealthLogForm() {
       workout_minutes: num(values.workout_minutes),
     });
     setSaving(false);
+    if (!res.ok) {
+      setError(res.error ?? "Erro ao salvar.");
+      return;
+    }
     setSaved(true);
     router.refresh();
   }
@@ -180,6 +186,13 @@ export function HealthLogForm() {
           )}
           {saved ? "Salvo! Atualizar" : "Salvar dados"}
         </Button>
+        {error && (
+          <p className="rounded-lg border border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive">
+            {/cardio_status|strain|tolerance|workout/.test(error)
+              ? "Faltam colunas no banco. Rode a migration 0004 no Supabase (veja docs/SETUP.md)."
+              : error}
+          </p>
+        )}
       </form>
     </Card>
   );

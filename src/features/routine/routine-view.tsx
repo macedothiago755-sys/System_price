@@ -31,11 +31,13 @@ export function RoutineView({ blocks }: { blocks: RoutineBlock[] }) {
   const [category, setCategory] = useState("trabalho");
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    await addRoutineBlock({
+    setError(null);
+    const res = await addRoutineBlock({
       weekday,
       start_time: start,
       end_time: end,
@@ -44,6 +46,10 @@ export function RoutineView({ blocks }: { blocks: RoutineBlock[] }) {
       notes: "",
     });
     setSaving(false);
+    if (!res.ok) {
+      setError(res.error ?? "Erro ao salvar.");
+      return;
+    }
     setTitle("");
     setStart("");
     setEnd("");
@@ -54,8 +60,13 @@ export function RoutineView({ blocks }: { blocks: RoutineBlock[] }) {
     if (blocks.length && !confirm("Isso substitui a rotina atual pela rotina base. Continuar?"))
       return;
     setBusy("seed");
-    await seedBaseRoutine();
+    setError(null);
+    const res = await seedBaseRoutine();
     setBusy(null);
+    if (!res.ok) {
+      setError(res.error ?? "Erro ao carregar a rotina.");
+      return;
+    }
     router.refresh();
   }
 
@@ -126,6 +137,13 @@ export function RoutineView({ blocks }: { blocks: RoutineBlock[] }) {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Adicionar
             </Button>
+            {error && (
+              <p className="rounded-lg border border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive">
+                {error.includes("routine_blocks")
+                  ? "A tabela da rotina não existe ainda. Rode a migration 0005 no Supabase (veja docs/SETUP.md)."
+                  : error}
+              </p>
+            )}
           </form>
 
           <div className="mt-4 space-y-2 border-t border-border/60 pt-4">

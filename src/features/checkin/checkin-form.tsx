@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Mood } from "@/lib/types";
+import type { Mood, DailyCheckin } from "@/lib/types";
 import { submitCheckin } from "./actions";
 
 const moods: { value: Mood; emoji: string; label: string }[] = [
@@ -43,16 +43,21 @@ function Scale({
   );
 }
 
-export function CheckinForm() {
-  const [energy, setEnergy] = useState(7);
-  const [focus, setFocus] = useState(7);
-  const [mood, setMood] = useState<Mood>("great");
-  const [sleep, setSleep] = useState("7.5");
-  const [concern, setConcern] = useState("");
-  const [win, setWin] = useState("");
+export function CheckinForm({
+  initial,
+}: {
+  initial?: DailyCheckin | null;
+}) {
+  const [energy, setEnergy] = useState(initial?.energy ?? 7);
+  const [focus, setFocus] = useState(initial?.focus ?? 7);
+  const [mood, setMood] = useState<Mood>(initial?.mood ?? "great");
+  const [sleep, setSleep] = useState(String(initial?.sleep_hours ?? "7.5"));
+  const [concern, setConcern] = useState(initial?.main_concern ?? "");
+  const [win, setWin] = useState(initial?.win_of_day ?? "");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const alreadyToday = Boolean(initial);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,6 +102,12 @@ export function CheckinForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {alreadyToday && (
+        <p className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
+          ✅ Você já fez o check-in de hoje. Os dados estão salvos — pode editar e
+          salvar de novo se quiser.
+        </p>
+      )}
       <Card>
         <label className="mb-3 block text-sm font-medium">
           Como está sua energia?

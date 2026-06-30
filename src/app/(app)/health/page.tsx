@@ -1,5 +1,6 @@
 import { HealthDashboard } from "@/features/health/health-dashboard";
 import { HealthLogForm } from "@/features/health/health-log-form";
+import { HealthHistory } from "@/features/health/health-history";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import { getHealthData } from "@/lib/data";
@@ -40,6 +41,8 @@ export default async function HealthPage() {
           </div>
         </Card>
       </div>
+
+      <HealthHistory history={history} />
     </>
   );
 }
